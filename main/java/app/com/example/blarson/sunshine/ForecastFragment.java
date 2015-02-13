@@ -72,17 +72,6 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-       View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-//        //dummy date for list view
-//        String[] forecastArray = {
-//                "Today - Sunny - 88/63",
-//                "Tomorrow - Foggy - 70/40",
-//                "Weds - Cloudy - 72/63",
-//                "Fri - Heavy Rains - 65/56",
-//                "Sat - Something bogus - 60/51",
-//                "Sun - Sunny - 80/68"
-//        };
-//        List<String> weekForecast = new ArrayList<String>(Arrays.asList(forecastArray));
 
         //create an array adapter
         //the arrayadapter will take data from a source and populate the listview its attached to
@@ -118,7 +107,7 @@ private void updateWeather() {
     weatherTask.execute(location);
 }
 
-@Override
+@Override  //this will update the main page when changing the preference
 public void onStart() {
     super.onStart();
     updateWeather();
@@ -141,7 +130,22 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     //prepare the weather high/lows for presentation
 
     private String formatHighLows(double high, double low) {
-        //for presentation, assume the user doesn't care about tenths of a degree.
+        // Data is fetched in Celsius by default.
+        // If user prefers to see in Fahrenheit, convert the values here.
+        // We do this rather than fetching in Fahrenheit so that the user can
+        // change this option without us having to re-fetch the data once
+        // we start storing the values in a database.
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String currentUnitSetting;
+        currentUnitSetting = sharedPrefs.getString(getString(R.string.pref_units_key),"none");
+        if(currentUnitSetting.equals("2")){
+            high = (high * 1.8) + 32;
+            low = (low * 1.8) + 32;
+        } else if (currentUnitSetting.equals("none")){
+            Log.d(LOG_TAG, "UNIT TYPE NOT FOUND: " + currentUnitSetting);
+        }
+       //for presentation, assume the user doesn't care about tenths of a degree.
         long roundedHigh = Math.round(high);
         long roundedLow = Math.round(low);
 
